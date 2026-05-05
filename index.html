@@ -6,8 +6,10 @@
     <title>Mess Management Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        /* Custom Scrollbar for Desktop */
         .table-container::-webkit-scrollbar { height: 8px; width: 8px; }
         .table-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        
         input[type="number"] { width: 60px; text-align: center; }
         .weekend-row { background-color: #f8fafc; }
         
@@ -15,15 +17,45 @@
         .tab-active { background-color: #f1f5f9; color: #1e40af; border-bottom: 2px solid #1e40af; }
         .tab-inactive { background-color: transparent; color: #93c5fd; }
         .tab-inactive:hover { color: #ffffff; }
+
+        /* ==========================================
+           MOBILE-FRIENDLY "CARD" TABLE CSS
+           ========================================== */
+        @media (max-width: 768px) {
+            /* Force table to not behave like a table */
+            table, thead, tbody, th, td, tr { display: block; }
+            
+            /* Hide table headers (but not display: none, for accessibility) */
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            
+            /* Turn rows into cards */
+            tr { border: 1px solid #cbd5e1; border-radius: 0.75rem; margin-bottom: 1rem; background: #ffffff; padding: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+            
+            /* Format cells inside the card */
+            td { display: flex; justify-content: space-between; align-items: center; border: none !important; padding: 0.75rem 0.5rem !important; border-bottom: 1px solid #f1f5f9 !important; position: relative; }
+            td:last-child { border-bottom: none !important; }
+            
+            /* Insert labels for each cell based on data-label attribute */
+            td::before { content: attr(data-label); font-weight: 700; color: #64748b; font-size: 0.75rem; text-transform: uppercase; }
+            
+            /* Adjust inputs for touch screens */
+            input[type="number"] { width: 80px; text-align: right; padding: 0.5rem; }
+            input[type="text"], input[type="date"] { width: 60%; text-align: right; padding: 0.5rem; }
+            input[type="checkbox"] { width: 1.5rem; height: 1.5rem; }
+            
+            /* Remove sticky positioning on mobile so it flows naturally */
+            .sticky { position: static !important; }
+            .min-w-[1100px], .min-w-[900px] { min-width: 100% !important; }
+        }
     </style>
 </head>
-<body class="bg-slate-100 font-sans text-slate-800 h-screen flex flex-col">
+<body class="bg-slate-100 font-sans text-slate-800 md:h-screen flex flex-col">
 
     <div class="bg-blue-800 text-white shadow-md z-20">
-        <div class="p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
             <div>
-                <h1 class="text-2xl font-bold">Mess Management Portal</h1>
-                <p class="text-xs text-blue-200">NU Faculty & Staff</p>
+                <h1 class="text-xl md:text-2xl font-bold">Mess Management</h1>
+                <p class="text-xs text-blue-200">NU Faculty & Staff Portal</p>
             </div>
             
             <div id="loadingIndicator" class="text-sm font-bold text-yellow-300 animate-pulse">
@@ -31,31 +63,31 @@
             </div>
         </div>
 
-        <div class="flex px-4 space-x-2 mt-2">
-            <button id="btnTabBulk" class="px-5 py-2 font-bold text-sm rounded-t-lg transition tab-active" onclick="switchTab('bulk')">
+        <div class="flex px-2 md:px-4 space-x-1 mt-2 overflow-x-auto whitespace-nowrap">
+            <button id="btnTabBulk" class="px-4 py-2 font-bold text-sm rounded-t-lg transition tab-active" onclick="switchTab('bulk')">
                 Daily Bulk Entry
             </button>
-            <button id="btnTabMonth" class="px-5 py-2 font-bold text-sm rounded-t-lg transition tab-inactive" onclick="switchTab('month')">
-                Individual Monthly Card
+            <button id="btnTabMonth" class="px-4 py-2 font-bold text-sm rounded-t-lg transition tab-inactive" onclick="switchTab('month')">
+                Individual Month Card
             </button>
         </div>
     </div>
 
-    <div class="flex-1 overflow-hidden relative">
+    <div class="flex-1 overflow-auto md:overflow-hidden relative">
         
         <div id="viewBulk" class="h-full flex flex-col p-2 md:p-6 fade-in block">
             
-            <div class="bg-white p-3 rounded-t-xl border border-b-0 border-slate-200 flex justify-between items-end flex-wrap gap-4">
-                <div class="flex flex-col">
-                    <label class="text-[10px] text-slate-500 uppercase font-bold pr-1">Global Date Filter</label>
-                    <input type="date" id="globalDate" class="border rounded text-slate-800 text-sm p-2 outline-none focus:border-blue-500 font-semibold w-48">
+            <div class="bg-white p-3 md:p-4 rounded-t-xl border border-b-0 border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 shadow-sm z-10 relative">
+                <div class="flex flex-col w-full md:w-auto">
+                    <label class="text-[10px] text-slate-500 uppercase font-bold pr-1 mb-1">Global Date Filter</label>
+                    <input type="date" id="globalDate" class="border rounded text-slate-800 text-sm p-2 outline-none focus:border-blue-500 font-semibold w-full md:w-48 bg-slate-50">
                 </div>
-                <button id="submitBulkBtn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded font-bold transition shadow">
+                <button id="submitBulkBtn" class="w-full md:w-auto bg-green-500 hover:bg-green-600 text-white px-6 py-3 md:py-2 rounded font-bold transition shadow text-lg md:text-base">
                     Submit Bulk Data
                 </button>
             </div>
 
-            <div class="table-container overflow-auto flex-1 bg-white border border-slate-200 rounded-b-xl shadow-lg">
+            <div class="table-container overflow-auto flex-1 bg-transparent md:bg-white border-0 md:border border-slate-200 rounded-b-xl md:shadow-lg">
                 <table class="w-full text-left border-collapse min-w-[1100px]">
                     <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm text-xs uppercase text-slate-500">
                         <tr>
@@ -81,37 +113,39 @@
 
         <div id="viewMonth" class="h-full flex flex-col p-2 md:p-6 fade-in hidden">
             
-            <div class="bg-white p-3 rounded-t-xl border border-b-0 border-slate-200 flex justify-between items-end flex-wrap gap-4">
-                <div class="flex gap-3 flex-wrap items-end">
-                    <div class="flex flex-col">
-                        <label class="text-[10px] text-slate-500 uppercase font-bold pr-1">Staff Member</label>
-                        <select id="staffSelect" class="border rounded text-slate-800 text-sm p-2 outline-none focus:border-blue-500 w-64 shadow-sm">
+            <div class="bg-white p-3 md:p-4 rounded-t-xl border border-b-0 border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 shadow-sm z-10 relative">
+                <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                    <div class="flex flex-col w-full md:w-auto">
+                        <label class="text-[10px] text-slate-500 uppercase font-bold pr-1 mb-1">Staff Member</label>
+                        <select id="staffSelect" class="border rounded text-slate-800 text-sm p-2 outline-none focus:border-blue-500 w-full md:w-64 bg-slate-50">
                             <option value="">Loading...</option>
                         </select>
                     </div>
-                    <div class="flex flex-col">
-                        <label class="text-[10px] text-slate-500 uppercase font-bold pr-1">Month & Year</label>
-                        <input type="month" id="monthSelect" class="border rounded text-slate-800 text-sm p-2 outline-none focus:border-blue-500 shadow-sm cursor-pointer">
+                    <div class="flex flex-col w-full md:w-auto">
+                        <label class="text-[10px] text-slate-500 uppercase font-bold pr-1 mb-1">Month & Year</label>
+                        <input type="month" id="monthSelect" class="border rounded text-slate-800 text-sm p-2 outline-none focus:border-blue-500 bg-slate-50 cursor-pointer w-full">
                     </div>
-                    <button id="generateMonthBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded text-sm font-bold transition shadow-sm">
+                    <button id="generateMonthBtn" class="w-full md:w-auto mt-2 md:mt-0 bg-blue-600 hover:bg-blue-500 text-white px-4 py-3 md:py-2 rounded font-bold transition shadow text-lg md:text-sm">
                         Load Month
                     </button>
                 </div>
-                <button id="submitMonthBtn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded font-bold transition shadow hidden">
+                <button id="submitMonthBtn" class="w-full md:w-auto bg-green-500 hover:bg-green-600 text-white px-6 py-3 md:py-2 rounded font-bold transition shadow hidden text-lg md:text-base mt-2 md:mt-0">
                     Save Month Data
                 </button>
             </div>
 
-            <div class="table-container overflow-auto flex-1 bg-white border border-slate-200 rounded-b-xl shadow-lg relative">
+            <div class="table-container overflow-auto flex-1 bg-transparent md:bg-white border-0 md:border border-slate-200 rounded-b-xl md:shadow-lg relative">
                 
-                <div id="monthPlaceholder" class="absolute inset-0 flex items-center justify-center bg-slate-50/80 z-20">
-                    <p class="text-slate-400 font-semibold text-lg">Select a staff member and month to view card.</p>
+                <div id="monthPlaceholder" class="absolute inset-0 flex items-center justify-center bg-slate-50/90 z-20 rounded-b-xl text-center p-4">
+                    <p class="text-slate-500 font-semibold text-lg border-2 border-dashed border-slate-300 p-6 rounded-xl">
+                        Select a staff member and month to view their card.
+                    </p>
                 </div>
 
                 <table class="w-full text-left border-collapse min-w-[900px]">
                     <thead class="bg-slate-100 sticky top-0 z-10 shadow-sm text-xs uppercase text-slate-600">
                         <tr>
-                            <th class="p-3 border-b border-r sticky left-0 bg-slate-100 w-32 shadow-[1px_0_0_#e2e8f0]">Date</th>
+                            <th class="p-3 border-b border-r sticky left-0 bg-slate-100 w-32">Date</th>
                             <th class="p-3 border-b text-center">B</th>
                             <th class="p-3 border-b text-center">L</th>
                             <th class="p-3 border-b text-center border-r">D</th>
@@ -138,16 +172,13 @@
 
         let activeStaffList = [];
 
-        // Initialization
         window.onload = async () => {
-            // Setup Dates
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('globalDate').value = todayStr;
             
             const today = new Date();
             document.getElementById('monthSelect').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
 
-            // Fetch Staff once for both tabs
             try {
                 const response = await fetch(WEB_APP_URL);
                 const result = await response.json();
@@ -170,7 +201,6 @@
             }
         };
 
-        // Tab Switching Logic
         function switchTab(tabName) {
             const viewBulk = document.getElementById('viewBulk');
             const viewMonth = document.getElementById('viewMonth');
@@ -180,13 +210,13 @@
             if (tabName === 'bulk') {
                 viewBulk.classList.remove('hidden');
                 viewMonth.classList.add('hidden');
-                btnBulk.className = "px-5 py-2 font-bold text-sm rounded-t-lg transition tab-active";
-                btnMonth.className = "px-5 py-2 font-bold text-sm rounded-t-lg transition tab-inactive";
+                btnBulk.className = "px-4 py-2 font-bold text-sm rounded-t-lg transition tab-active";
+                btnMonth.className = "px-4 py-2 font-bold text-sm rounded-t-lg transition tab-inactive";
             } else {
                 viewMonth.classList.remove('hidden');
                 viewBulk.classList.add('hidden');
-                btnMonth.className = "px-5 py-2 font-bold text-sm rounded-t-lg transition tab-active";
-                btnBulk.className = "px-5 py-2 font-bold text-sm rounded-t-lg transition tab-inactive";
+                btnMonth.className = "px-4 py-2 font-bold text-sm rounded-t-lg transition tab-active";
+                btnBulk.className = "px-4 py-2 font-bold text-sm rounded-t-lg transition tab-inactive";
             }
         }
 
@@ -200,12 +230,12 @@
             });
         }
 
-        // Global date changes row dates
         document.getElementById('globalDate').addEventListener('change', (e) => {
             const newDate = e.target.value;
             document.querySelectorAll('.bulk-date-inp').forEach(inp => inp.value = newDate);
         });
 
+        // Notice the added data-label attributes for mobile CSS targeting
         function createBulkRow(name, email) {
             const tr = document.createElement('tr');
             tr.className = "hover:bg-blue-50 transition bulk-row";
@@ -215,41 +245,41 @@
             const currentDate = document.getElementById('globalDate').value;
 
             tr.innerHTML = `
-                <td class="p-3 border-r bg-white sticky left-0 group-hover:bg-blue-50">
-                    <p class="font-bold text-slate-700 truncate w-48">${name}</p>
-                    <p class="text-[10px] text-slate-400 truncate w-48 mb-2">${email}</p>
-                    <button type="button" class="add-day-btn text-[10px] font-bold text-blue-600 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded border border-blue-200 transition">
-                        ➕ Add Day
-                    </button>
+                <td class="p-3 md:border-r bg-slate-50 md:bg-white md:sticky left-0 group-hover:bg-blue-50" data-label="Staff">
+                    <div class="text-right md:text-left">
+                        <p class="font-bold text-slate-800 text-base md:text-sm md:w-48">${name}</p>
+                        <p class="text-[10px] text-slate-400 md:w-48 mb-2">${email}</p>
+                        <button type="button" class="add-day-btn text-xs font-bold text-blue-600 bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded border border-blue-200 transition">
+                            ➕ Add Day
+                        </button>
+                    </div>
                 </td>
-                <td class="p-3 border-r">
-                    <input type="date" value="${currentDate}" class="bulk-date-inp w-full border rounded p-1 text-sm outline-none focus:border-blue-500">
+                <td class="p-3 md:border-r" data-label="Date">
+                    <input type="date" value="${currentDate}" class="bulk-date-inp border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white md:w-full">
                 </td>
-                <td class="p-3 text-center"><input type="checkbox" class="inp-b w-4 h-4 cursor-pointer"></td>
-                <td class="p-3 text-center"><input type="checkbox" class="inp-l w-4 h-4 cursor-pointer"></td>
-                <td class="p-3 text-center border-r"><input type="checkbox" class="inp-d w-4 h-4 cursor-pointer"></td>
-                <td class="p-3 text-center"><input type="number" min="0" class="inp-tea border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
-                <td class="p-3 text-center"><input type="number" min="0" class="inp-eggs border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
-                <td class="p-3 text-center"><input type="number" min="0" class="inp-milk border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
-                <td class="p-3 text-center"><input type="number" min="0" class="inp-roti border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
-                <td class="p-3 text-center border-r"><input type="number" min="0" class="inp-paratha border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
-                <td class="p-3 text-center"><input type="number" min="0" placeholder="0" class="inp-cost border rounded p-1 text-xs outline-none focus:border-blue-500 w-16"></td>
-                <td class="p-3"><input type="text" placeholder="Notes..." class="inp-rem border rounded p-1 w-full text-xs outline-none focus:border-blue-500"></td>
+                <td class="p-3 md:text-center" data-label="Breakfast (B)"><input type="checkbox" class="inp-b cursor-pointer accent-blue-600"></td>
+                <td class="p-3 md:text-center" data-label="Lunch (L)"><input type="checkbox" class="inp-l cursor-pointer accent-blue-600"></td>
+                <td class="p-3 md:text-center md:border-r" data-label="Dinner (D)"><input type="checkbox" class="inp-d cursor-pointer accent-blue-600"></td>
+                <td class="p-3 md:text-center" data-label="Tea"><input type="number" min="0" class="inp-tea border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white"></td>
+                <td class="p-3 md:text-center" data-label="Eggs"><input type="number" min="0" class="inp-eggs border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white"></td>
+                <td class="p-3 md:text-center" data-label="Milk"><input type="number" min="0" class="inp-milk border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white"></td>
+                <td class="p-3 md:text-center" data-label="Roti"><input type="number" min="0" class="inp-roti border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white"></td>
+                <td class="p-3 md:text-center md:border-r" data-label="Paratha"><input type="number" min="0" class="inp-paratha border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white"></td>
+                <td class="p-3 md:text-center" data-label="Special (Rs)"><input type="number" min="0" placeholder="0" class="inp-cost border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white md:w-16"></td>
+                <td class="p-3" data-label="Remarks"><input type="text" placeholder="Notes..." class="inp-rem border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white md:w-full"></td>
             `;
             return tr;
         }
 
-        // Add Day functionality in Bulk View
         document.getElementById('bulkTableBody').addEventListener('click', function(e) {
             if(e.target.classList.contains('add-day-btn')) {
                 const currentRow = e.target.closest('tr');
                 const newRow = createBulkRow(currentRow.dataset.name, currentRow.dataset.email);
-                newRow.querySelector('.bulk-date-inp').value = ""; // Empty date for new row
+                newRow.querySelector('.bulk-date-inp').value = "";
                 currentRow.after(newRow);
             }
         });
 
-        // Submit Bulk
         document.getElementById('submitBulkBtn').addEventListener('click', () => submitData('.bulk-row', 'submitBulkBtn'));
 
 
@@ -295,22 +325,22 @@
                 tr.dataset.email = selectedStaff.email;
 
                 tr.innerHTML = `
-                    <td class="p-3 border-r sticky left-0 shadow-[1px_0_0_#e2e8f0] ${isWeekend ? 'bg-slate-50' : 'bg-white'} group-hover:bg-blue-50 z-0">
-                        <div class="flex justify-between items-center w-full">
-                            <span class="font-bold text-slate-700">${String(day).padStart(2, '0')}</span>
-                            <span class="text-xs ${isWeekend ? 'text-red-400 font-bold' : 'text-slate-400'}">${dayName}</span>
+                    <td class="p-3 md:border-r md:sticky left-0 shadow-[1px_0_0_#e2e8f0] ${isWeekend ? 'bg-slate-100' : 'bg-slate-50 md:bg-white'} group-hover:bg-blue-50 z-0" data-label="Date">
+                        <div class="flex justify-end md:justify-between items-center w-full gap-2">
+                            <span class="font-bold text-slate-800 text-lg md:text-sm">${String(day).padStart(2, '0')}</span>
+                            <span class="text-sm md:text-xs ${isWeekend ? 'text-red-500 font-bold' : 'text-slate-500'}">${dayName}</span>
                         </div>
                     </td>
-                    <td class="p-3 text-center"><input type="checkbox" class="inp-b w-4 h-4 cursor-pointer"></td>
-                    <td class="p-3 text-center"><input type="checkbox" class="inp-l w-4 h-4 cursor-pointer"></td>
-                    <td class="p-3 text-center border-r"><input type="checkbox" class="inp-d w-4 h-4 cursor-pointer"></td>
-                    <td class="p-3 text-center"><input type="number" min="0" class="inp-tea border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
-                    <td class="p-3 text-center"><input type="number" min="0" class="inp-eggs border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
-                    <td class="p-3 text-center"><input type="number" min="0" class="inp-milk border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
-                    <td class="p-3 text-center"><input type="number" min="0" class="inp-roti border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
-                    <td class="p-3 text-center border-r"><input type="number" min="0" class="inp-paratha border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
-                    <td class="p-3 text-center"><input type="number" min="0" placeholder="0" class="inp-cost border rounded p-1 text-xs outline-none focus:border-blue-500 w-16"></td>
-                    <td class="p-3"><input type="text" placeholder="Notes..." class="inp-rem border rounded p-1 w-full text-xs outline-none focus:border-blue-500"></td>
+                    <td class="p-3 md:text-center" data-label="Breakfast (B)"><input type="checkbox" class="inp-b cursor-pointer accent-blue-600"></td>
+                    <td class="p-3 md:text-center" data-label="Lunch (L)"><input type="checkbox" class="inp-l cursor-pointer accent-blue-600"></td>
+                    <td class="p-3 md:text-center md:border-r" data-label="Dinner (D)"><input type="checkbox" class="inp-d cursor-pointer accent-blue-600"></td>
+                    <td class="p-3 md:text-center" data-label="Tea"><input type="number" min="0" class="inp-tea border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white"></td>
+                    <td class="p-3 md:text-center" data-label="Eggs"><input type="number" min="0" class="inp-eggs border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white"></td>
+                    <td class="p-3 md:text-center" data-label="Milk"><input type="number" min="0" class="inp-milk border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white"></td>
+                    <td class="p-3 md:text-center" data-label="Roti"><input type="number" min="0" class="inp-roti border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white"></td>
+                    <td class="p-3 md:text-center md:border-r" data-label="Paratha"><input type="number" min="0" class="inp-paratha border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white"></td>
+                    <td class="p-3 md:text-center" data-label="Special (Rs)"><input type="number" min="0" placeholder="0" class="inp-cost border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white md:w-16"></td>
+                    <td class="p-3" data-label="Remarks"><input type="text" placeholder="Notes..." class="inp-rem border rounded p-1 text-sm outline-none focus:border-blue-500 bg-white md:w-full"></td>
                 `;
                 tbody.appendChild(tr);
             }
@@ -319,7 +349,6 @@
             document.getElementById('submitMonthBtn').classList.remove('hidden');
         });
 
-        // Submit Month
         document.getElementById('submitMonthBtn').addEventListener('click', () => submitData('.month-row', 'submitMonthBtn'));
 
 
@@ -345,7 +374,6 @@
                 const cost = parseFloat(row.querySelector('.inp-cost').value) || 0;
                 const rem = row.querySelector('.inp-rem').value.trim();
                 
-                // Get date depending on which tab we are in
                 const rowDate = row.dataset.date || row.querySelector('.bulk-date-inp').value;
 
                 if (b || l || d || tea > 0 || eggs > 0 || milk > 0 || roti > 0 || paratha > 0 || cost > 0 || rem !== "") {
@@ -379,7 +407,6 @@
                 
                 if(result.status === "success") {
                     alert(`Success! Saved ${result.inserted} records.`);
-                    // Clear inputs for the submitted rows
                     rows.forEach(row => {
                         row.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
                         row.querySelectorAll('input[type="number"], input[type="text"]').forEach(inp => inp.value = "");
