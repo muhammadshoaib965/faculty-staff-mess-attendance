@@ -3,66 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monthly Mess Card Entry</title>
+    <title>Mess Management Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .table-container::-webkit-scrollbar { height: 8px; width: 8px; }
         .table-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
         input[type="number"] { width: 60px; text-align: center; }
-        /* Weekend highlighting */
         .weekend-row { background-color: #f8fafc; }
+        
+        /* Tab active/inactive states */
+        .tab-active { background-color: #f1f5f9; color: #1e40af; border-bottom: 2px solid #1e40af; }
+        .tab-inactive { background-color: transparent; color: #93c5fd; }
+        .tab-inactive:hover { color: #ffffff; }
     </style>
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 h-screen flex flex-col">
 
-    <div class="bg-blue-800 text-white p-4 shadow-md z-10">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 max-w-7xl mx-auto">
+    <div class="bg-blue-800 text-white shadow-md z-20">
+        <div class="p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <h1 class="text-xl font-bold">Individual Monthly Card</h1>
-                <p class="text-xs text-blue-200">Select a person and month to enter data</p>
+                <h1 class="text-2xl font-bold">Mess Management Portal</h1>
+                <p class="text-xs text-blue-200">NU Faculty & Staff</p>
             </div>
             
-            <div class="flex flex-wrap items-end gap-3 w-full md:w-auto">
-                <div class="flex flex-col">
-                    <label class="text-[10px] text-blue-200 uppercase font-bold pr-1">Staff Member</label>
-                    <select id="staffSelect" class="bg-white text-slate-800 text-sm p-2 rounded outline-none w-64 border-none shadow-sm disabled:opacity-50">
-                        <option value="">Loading Staff...</option>
-                    </select>
-                </div>
-
-                <div class="flex flex-col">
-                    <label class="text-[10px] text-blue-200 uppercase font-bold pr-1">Month & Year</label>
-                    <input type="month" id="monthSelect" class="bg-white text-slate-800 text-sm p-2 rounded outline-none shadow-sm cursor-pointer">
-                </div>
-
-                <button id="generateBtn" class="bg-blue-600 hover:bg-blue-500 border border-blue-400 px-4 py-2 rounded text-sm font-bold transition shadow-sm">
-                    Load Month
-                </button>
+            <div id="loadingIndicator" class="text-sm font-bold text-yellow-300 animate-pulse">
+                Fetching Staff Data...
             </div>
+        </div>
+
+        <div class="flex px-4 space-x-2 mt-2">
+            <button id="btnTabBulk" class="px-5 py-2 font-bold text-sm rounded-t-lg transition tab-active" onclick="switchTab('bulk')">
+                Daily Bulk Entry
+            </button>
+            <button id="btnTabMonth" class="px-5 py-2 font-bold text-sm rounded-t-lg transition tab-inactive" onclick="switchTab('month')">
+                Individual Monthly Card
+            </button>
         </div>
     </div>
 
-    <div class="flex-1 overflow-hidden p-2 md:p-6 max-w-7xl mx-auto w-full">
-        <div class="bg-white rounded-xl shadow-lg border border-slate-200 h-full flex flex-col relative">
+    <div class="flex-1 overflow-hidden relative">
+        
+        <div id="viewBulk" class="h-full flex flex-col p-2 md:p-6 fade-in block">
             
-            <div id="statusMessage" class="absolute inset-0 flex items-center justify-center bg-white/90 z-20 rounded-xl">
-                <div class="text-center text-slate-500 font-medium bg-white p-6 rounded shadow-sm border">
-                    <svg class="w-12 h-12 mx-auto text-blue-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    <span id="statusText">Fetching Active Staff...</span>
+            <div class="bg-white p-3 rounded-t-xl border border-b-0 border-slate-200 flex justify-between items-end flex-wrap gap-4">
+                <div class="flex flex-col">
+                    <label class="text-[10px] text-slate-500 uppercase font-bold pr-1">Global Date Filter</label>
+                    <input type="date" id="globalDate" class="border rounded text-slate-800 text-sm p-2 outline-none focus:border-blue-500 font-semibold w-48">
                 </div>
+                <button id="submitBulkBtn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded font-bold transition shadow">
+                    Submit Bulk Data
+                </button>
             </div>
 
-            <div class="p-4 border-b bg-slate-50 flex justify-between items-center hidden" id="tableHeader">
-                <div>
-                    <h2 class="text-lg font-bold text-slate-700" id="selectedStaffName">Name</h2>
-                    <p class="text-xs text-slate-500" id="selectedStaffEmail">Email</p>
+            <div class="table-container overflow-auto flex-1 bg-white border border-slate-200 rounded-b-xl shadow-lg">
+                <table class="w-full text-left border-collapse min-w-[1100px]">
+                    <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm text-xs uppercase text-slate-500">
+                        <tr>
+                            <th class="p-3 border-b border-r bg-slate-50 sticky left-0 w-64">Staff Member</th>
+                            <th class="p-3 border-b border-r w-40">Entry Date</th>
+                            <th class="p-3 border-b text-center">B</th>
+                            <th class="p-3 border-b text-center">L</th>
+                            <th class="p-3 border-b text-center border-r">D</th>
+                            <th class="p-3 border-b text-center">Tea</th>
+                            <th class="p-3 border-b text-center">Eggs</th>
+                            <th class="p-3 border-b text-center">Milk</th>
+                            <th class="p-3 border-b text-center">Roti</th>
+                            <th class="p-3 border-b text-center border-r">Paratha</th>
+                            <th class="p-3 border-b text-center">Special (Rs)</th>
+                            <th class="p-3 border-b w-48">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bulkTableBody" class="text-sm divide-y divide-slate-100">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="viewMonth" class="h-full flex flex-col p-2 md:p-6 fade-in hidden">
+            
+            <div class="bg-white p-3 rounded-t-xl border border-b-0 border-slate-200 flex justify-between items-end flex-wrap gap-4">
+                <div class="flex gap-3 flex-wrap items-end">
+                    <div class="flex flex-col">
+                        <label class="text-[10px] text-slate-500 uppercase font-bold pr-1">Staff Member</label>
+                        <select id="staffSelect" class="border rounded text-slate-800 text-sm p-2 outline-none focus:border-blue-500 w-64 shadow-sm">
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col">
+                        <label class="text-[10px] text-slate-500 uppercase font-bold pr-1">Month & Year</label>
+                        <input type="month" id="monthSelect" class="border rounded text-slate-800 text-sm p-2 outline-none focus:border-blue-500 shadow-sm cursor-pointer">
+                    </div>
+                    <button id="generateMonthBtn" class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded text-sm font-bold transition shadow-sm">
+                        Load Month
+                    </button>
                 </div>
-                <button id="submitBtn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded font-bold transition shadow">
+                <button id="submitMonthBtn" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded font-bold transition shadow hidden">
                     Save Month Data
                 </button>
             </div>
 
-            <div class="table-container overflow-auto hidden flex-1" id="tableContainer">
+            <div class="table-container overflow-auto flex-1 bg-white border border-slate-200 rounded-b-xl shadow-lg relative">
+                
+                <div id="monthPlaceholder" class="absolute inset-0 flex items-center justify-center bg-slate-50/80 z-20">
+                    <p class="text-slate-400 font-semibold text-lg">Select a staff member and month to view card.</p>
+                </div>
+
                 <table class="w-full text-left border-collapse min-w-[900px]">
                     <thead class="bg-slate-100 sticky top-0 z-10 shadow-sm text-xs uppercase text-slate-600">
                         <tr>
@@ -84,6 +129,7 @@
                 </table>
             </div>
         </div>
+
     </div>
 
     <script>
@@ -92,83 +138,161 @@
 
         let activeStaffList = [];
 
-        // Setup current month on load
-        const today = new Date();
-        const monthInput = document.getElementById('monthSelect');
-        // Format YYYY-MM
-        monthInput.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-
-        // Fetch staff on page load
+        // Initialization
         window.onload = async () => {
-            const statusText = document.getElementById('statusText');
-            const staffSelect = document.getElementById('staffSelect');
+            // Setup Dates
+            const todayStr = new Date().toISOString().split('T')[0];
+            document.getElementById('globalDate').value = todayStr;
             
+            const today = new Date();
+            document.getElementById('monthSelect').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+
+            // Fetch Staff once for both tabs
             try {
                 const response = await fetch(WEB_APP_URL);
                 const result = await response.json();
                 
                 if (result.status === "success") {
                     activeStaffList = result.data;
+                    document.getElementById('loadingIndicator').innerText = `Loaded ${activeStaffList.length} Staff`;
+                    document.getElementById('loadingIndicator').classList.replace('text-yellow-300', 'text-green-300');
+                    document.getElementById('loadingIndicator').classList.remove('animate-pulse');
                     
-                    // Populate Dropdown
-                    staffSelect.innerHTML = '<option value="" disabled selected>-- Select Staff Member --</option>';
-                    activeStaffList.forEach((staff, index) => {
-                        const opt = document.createElement('option');
-                        opt.value = index; // Store array index to retrieve data later
-                        opt.text = staff.name;
-                        staffSelect.appendChild(opt);
-                    });
-                    
-                    statusText.innerText = "Ready. Select a person and month.";
-                    document.getElementById('statusMessage').classList.add('bg-white/50');
-                    // Hide overlay if user interacts
-                    staffSelect.addEventListener('change', () => document.getElementById('statusMessage').classList.add('hidden'));
-
+                    initBulkTab();
+                    initMonthTab();
                 } else {
-                    statusText.innerText = "Error: " + result.message;
-                    statusText.className = "text-red-500 font-bold";
+                    document.getElementById('loadingIndicator').innerText = "Error loading staff.";
+                    document.getElementById('loadingIndicator').classList.replace('text-yellow-300', 'text-red-400');
                 }
             } catch (error) {
-                statusText.innerText = "Connection failed. Check Web App URL.";
-                statusText.className = "text-red-500 font-bold";
+                document.getElementById('loadingIndicator').innerText = "Connection Failed.";
+                document.getElementById('loadingIndicator').classList.replace('text-yellow-300', 'text-red-400');
             }
         };
 
-        // Generate the Monthly Grid
-        document.getElementById('generateBtn').addEventListener('click', () => {
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            const viewBulk = document.getElementById('viewBulk');
+            const viewMonth = document.getElementById('viewMonth');
+            const btnBulk = document.getElementById('btnTabBulk');
+            const btnMonth = document.getElementById('btnTabMonth');
+
+            if (tabName === 'bulk') {
+                viewBulk.classList.remove('hidden');
+                viewMonth.classList.add('hidden');
+                btnBulk.className = "px-5 py-2 font-bold text-sm rounded-t-lg transition tab-active";
+                btnMonth.className = "px-5 py-2 font-bold text-sm rounded-t-lg transition tab-inactive";
+            } else {
+                viewMonth.classList.remove('hidden');
+                viewBulk.classList.add('hidden');
+                btnMonth.className = "px-5 py-2 font-bold text-sm rounded-t-lg transition tab-active";
+                btnBulk.className = "px-5 py-2 font-bold text-sm rounded-t-lg transition tab-inactive";
+            }
+        }
+
+        // ==========================================
+        // TAB 1 LOGIC: DAILY BULK ENTRY
+        // ==========================================
+        function initBulkTab() {
+            const tbody = document.getElementById('bulkTableBody');
+            activeStaffList.forEach(staff => {
+                tbody.appendChild(createBulkRow(staff.name, staff.email));
+            });
+        }
+
+        // Global date changes row dates
+        document.getElementById('globalDate').addEventListener('change', (e) => {
+            const newDate = e.target.value;
+            document.querySelectorAll('.bulk-date-inp').forEach(inp => inp.value = newDate);
+        });
+
+        function createBulkRow(name, email) {
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-blue-50 transition bulk-row";
+            tr.dataset.email = email;
+            tr.dataset.name = name;
+
+            const currentDate = document.getElementById('globalDate').value;
+
+            tr.innerHTML = `
+                <td class="p-3 border-r bg-white sticky left-0 group-hover:bg-blue-50">
+                    <p class="font-bold text-slate-700 truncate w-48">${name}</p>
+                    <p class="text-[10px] text-slate-400 truncate w-48 mb-2">${email}</p>
+                    <button type="button" class="add-day-btn text-[10px] font-bold text-blue-600 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded border border-blue-200 transition">
+                        ➕ Add Day
+                    </button>
+                </td>
+                <td class="p-3 border-r">
+                    <input type="date" value="${currentDate}" class="bulk-date-inp w-full border rounded p-1 text-sm outline-none focus:border-blue-500">
+                </td>
+                <td class="p-3 text-center"><input type="checkbox" class="inp-b w-4 h-4 cursor-pointer"></td>
+                <td class="p-3 text-center"><input type="checkbox" class="inp-l w-4 h-4 cursor-pointer"></td>
+                <td class="p-3 text-center border-r"><input type="checkbox" class="inp-d w-4 h-4 cursor-pointer"></td>
+                <td class="p-3 text-center"><input type="number" min="0" class="inp-tea border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
+                <td class="p-3 text-center"><input type="number" min="0" class="inp-eggs border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
+                <td class="p-3 text-center"><input type="number" min="0" class="inp-milk border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
+                <td class="p-3 text-center"><input type="number" min="0" class="inp-roti border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
+                <td class="p-3 text-center border-r"><input type="number" min="0" class="inp-paratha border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
+                <td class="p-3 text-center"><input type="number" min="0" placeholder="0" class="inp-cost border rounded p-1 text-xs outline-none focus:border-blue-500 w-16"></td>
+                <td class="p-3"><input type="text" placeholder="Notes..." class="inp-rem border rounded p-1 w-full text-xs outline-none focus:border-blue-500"></td>
+            `;
+            return tr;
+        }
+
+        // Add Day functionality in Bulk View
+        document.getElementById('bulkTableBody').addEventListener('click', function(e) {
+            if(e.target.classList.contains('add-day-btn')) {
+                const currentRow = e.target.closest('tr');
+                const newRow = createBulkRow(currentRow.dataset.name, currentRow.dataset.email);
+                newRow.querySelector('.bulk-date-inp').value = ""; // Empty date for new row
+                currentRow.after(newRow);
+            }
+        });
+
+        // Submit Bulk
+        document.getElementById('submitBulkBtn').addEventListener('click', () => submitData('.bulk-row', 'submitBulkBtn'));
+
+
+        // ==========================================
+        // TAB 2 LOGIC: INDIVIDUAL MONTHLY CARD
+        // ==========================================
+        function initMonthTab() {
+            const select = document.getElementById('staffSelect');
+            select.innerHTML = '<option value="" disabled selected>-- Select Staff Member --</option>';
+            activeStaffList.forEach((staff, index) => {
+                const opt = document.createElement('option');
+                opt.value = index;
+                opt.text = staff.name;
+                select.appendChild(opt);
+            });
+        }
+
+        document.getElementById('generateMonthBtn').addEventListener('click', () => {
             const staffIndex = document.getElementById('staffSelect').value;
             const monthVal = document.getElementById('monthSelect').value;
 
-            if (staffIndex === "") return alert("Please select a staff member first.");
-            if (!monthVal) return alert("Please select a month.");
+            if (staffIndex === "") return alert("Select a staff member first.");
+            if (!monthVal) return alert("Select a month.");
 
             const selectedStaff = activeStaffList[staffIndex];
-            
-            // Extract Year and Month
             const [year, month] = monthVal.split('-');
-            // Get number of days in that month (passing 0 gets last day of previous month, so we use month directly which is 1-indexed for the next month naturally in JS)
             const daysInMonth = new Date(year, month, 0).getDate();
-
-            // Update UI headers
-            document.getElementById('selectedStaffName').innerText = selectedStaff.name;
-            document.getElementById('selectedStaffEmail').innerText = selectedStaff.email;
-            document.getElementById('selectedStaffEmail').dataset.email = selectedStaff.email; // hidden data
+            const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
             const tbody = document.getElementById('monthTableBody');
             tbody.innerHTML = '';
 
-            const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
             for (let day = 1; day <= daysInMonth; day++) {
-                // Create strict format date: YYYY-MM-DD
                 const dateString = `${year}-${month}-${String(day).padStart(2, '0')}`;
                 const dateObj = new Date(year, month - 1, day);
                 const dayName = daysOfWeek[dateObj.getDay()];
                 const isWeekend = (dayName === "Sat" || dayName === "Sun");
 
                 const tr = document.createElement('tr');
-                tr.className = `hover:bg-blue-50 transition day-row ${isWeekend ? 'weekend-row' : ''}`;
+                tr.className = `hover:bg-blue-50 transition month-row ${isWeekend ? 'weekend-row' : ''}`;
                 tr.dataset.date = dateString;
+                tr.dataset.name = selectedStaff.name;
+                tr.dataset.email = selectedStaff.email;
 
                 tr.innerHTML = `
                     <td class="p-3 border-r sticky left-0 shadow-[1px_0_0_#e2e8f0] ${isWeekend ? 'bg-slate-50' : 'bg-white'} group-hover:bg-blue-50 z-0">
@@ -191,21 +315,23 @@
                 tbody.appendChild(tr);
             }
 
-            document.getElementById('statusMessage').classList.add('hidden');
-            document.getElementById('tableHeader').classList.remove('hidden');
-            document.getElementById('tableContainer').classList.remove('hidden');
+            document.getElementById('monthPlaceholder').classList.add('hidden');
+            document.getElementById('submitMonthBtn').classList.remove('hidden');
         });
 
-        // Submit Logic
-        document.getElementById('submitBtn').addEventListener('click', async () => {
-            const btn = document.getElementById('submitBtn');
-            const rows = document.querySelectorAll('.day-row');
+        // Submit Month
+        document.getElementById('submitMonthBtn').addEventListener('click', () => submitData('.month-row', 'submitMonthBtn'));
+
+
+        // ==========================================
+        // SHARED SUBMISSION LOGIC
+        // ==========================================
+        async function submitData(rowSelector, btnId) {
+            const btn = document.getElementById(btnId);
+            const rows = document.querySelectorAll(rowSelector);
             const payload = [];
+            let missingDate = false;
 
-            const staffName = document.getElementById('selectedStaffName').innerText;
-            const staffEmail = document.getElementById('selectedStaffEmail').dataset.email;
-
-            // Go through every day of the month
             rows.forEach(row => {
                 const b = row.querySelector('.inp-b').checked;
                 const l = row.querySelector('.inp-l').checked;
@@ -218,22 +344,27 @@
                 const paratha = parseInt(row.querySelector('.inp-paratha').value) || 0;
                 const cost = parseFloat(row.querySelector('.inp-cost').value) || 0;
                 const rem = row.querySelector('.inp-rem').value.trim();
-                const rowDate = row.dataset.date;
+                
+                // Get date depending on which tab we are in
+                const rowDate = row.dataset.date || row.querySelector('.bulk-date-inp').value;
 
-                // Only grab rows where the user actually typed or checked something
                 if (b || l || d || tea > 0 || eggs > 0 || milk > 0 || roti > 0 || paratha > 0 || cost > 0 || rem !== "") {
+                    if(!rowDate) missingDate = true;
+                    
                     payload.push({
                         date: rowDate,
-                        name: staffName,
-                        email: staffEmail,
+                        name: row.dataset.name,
+                        email: row.dataset.email,
                         breakfast: b, lunch: l, dinner: d,
                         tea: tea, eggs: eggs, milk: milk, roti: roti, paratha: paratha, specialCost: cost, remarks: rem
                     });
                 }
             });
 
-            if (payload.length === 0) return alert("No data entered. Please fill out meals for at least one day.");
+            if(missingDate) return alert("Error: A selected entry is missing a date.");
+            if (payload.length === 0) return alert("No data entered to save.");
 
+            const originalBtnText = btn.innerText;
             btn.innerText = "Saving...";
             btn.disabled = true;
 
@@ -247,20 +378,22 @@
                 const result = await response.json();
                 
                 if(result.status === "success") {
-                    alert(`Success! Saved ${result.inserted} daily records to the sheet for ${staffName}.`);
-                    // Clear inputs so we don't accidentally double-submit
-                    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-                    document.querySelectorAll('input[type="number"], input[type="text"]').forEach(inp => inp.value = "");
+                    alert(`Success! Saved ${result.inserted} records.`);
+                    // Clear inputs for the submitted rows
+                    rows.forEach(row => {
+                        row.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                        row.querySelectorAll('input[type="number"], input[type="text"]').forEach(inp => inp.value = "");
+                    });
                 } else {
                     alert("Error saving: " + result.message);
                 }
             } catch (error) {
                 alert("Network error.");
             } finally {
-                btn.innerText = "Save Month Data";
+                btn.innerText = originalBtnText;
                 btn.disabled = false;
             }
-        });
+        }
     </script>
 </body>
 </html>
