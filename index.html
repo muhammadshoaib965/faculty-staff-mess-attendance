@@ -3,169 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Faculty Staff Attendance & Mess Portal</title>
+    <title>Mess Bulk Entry System</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for the data table */
+        .table-container::-webkit-scrollbar { height: 8px; }
+        .table-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        input[type="number"] { width: 60px; text-align: center; }
+    </style>
 </head>
-<body class="bg-slate-50 p-4 md:p-8 font-sans text-slate-800">
+<body class="bg-slate-100 font-sans text-slate-800 h-screen flex flex-col">
 
-    <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden border border-slate-200">
-        <div class="bg-blue-700 p-6 text-white text-center">
-            <h1 class="text-2xl font-bold tracking-wide">Daily Faculty Mess Entry</h1>
-            <p class="text-blue-100 text-sm mt-1">NU Mess Services</p>
+    <div class="bg-blue-800 text-white p-4 shadow-md flex flex-col md:flex-row justify-between items-center z-10 gap-4">
+        <div>
+            <h1 class="text-xl font-bold">Daily Mess Roster</h1>
+            <p class="text-xs text-blue-200">Bulk Entry Portal</p>
         </div>
-
-        <form id="attendanceForm" class="p-6 md:p-8 space-y-8">
-            
-            <div>
-                <h2 class="text-lg font-semibold border-b pb-2 mb-4 text-slate-700">Staff Information</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Date</label>
-                        <input type="date" id="date" required class="w-full border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Email</label>
-                        <input type="email" id="email" required placeholder="name@nu.edu.pk" class="w-full border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Full Name</label>
-                        <input type="text" id="name" required placeholder="e.g. Mr. Adeel Haider" class="w-full border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                </div>
+        
+        <div class="flex items-center gap-4 w-full md:w-auto">
+            <div class="bg-white rounded p-1 flex-grow md:flex-grow-0">
+                <input type="date" id="globalDate" class="w-full text-slate-800 text-sm p-1 outline-none font-semibold">
             </div>
-
-            <div>
-                <h2 class="text-lg font-semibold border-b pb-2 mb-4 text-slate-700">Standard Meals</h2>
-                <div class="flex space-x-6">
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" id="breakfast" class="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
-                        <span class="font-medium text-slate-700">Breakfast</span>
-                    </label>
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" id="lunch" class="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
-                        <span class="font-medium text-slate-700">Lunch</span>
-                    </label>
-                    <label class="flex items-center space-x-2 cursor-pointer">
-                        <input type="checkbox" id="dinner" class="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500">
-                        <span class="font-medium text-slate-700">Dinner</span>
-                    </label>
-                </div>
-            </div>
-
-            <div>
-                <h2 class="text-lg font-semibold border-b pb-2 mb-4 text-slate-700">Item Quantities</h2>
-                <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Tea</label>
-                        <input type="number" id="tea" min="0" value="0" class="w-full border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Eggs</label>
-                        <input type="number" id="eggs" min="0" value="0" class="w-full border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Milk</label>
-                        <input type="number" id="milk" min="0" value="0" class="w-full border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Roti</label>
-                        <input type="number" id="roti" min="0" value="0" class="w-full border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Paratha</label>
-                        <input type="number" id="paratha" min="0" value="0" class="w-full border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Others</label>
-                        <input type="number" id="others" min="0" value="0" class="w-full border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                </div>
-            </div>
-
-            <div>
-                <h2 class="text-lg font-semibold border-b pb-2 mb-4 text-slate-700">Extras & Remarks</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="md:col-span-1">
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Special Order Cost (Rs)</label>
-                        <input type="number" id="specialCost" min="0" value="0" class="w-full border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-slate-600 mb-1">Remarks</label>
-                        <input type="text" id="remarks" placeholder="Optional notes..." class="w-full border border-slate-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" id="submitBtn" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 px-4 rounded-md transition-colors duration-200">
-                Submit Record
+            <button id="submitBtn" class="bg-green-500 hover:bg-green-600 px-6 py-2 rounded font-bold transition whitespace-nowrap shadow">
+                Submit Data
             </button>
+        </div>
+    </div>
+
+    <div class="flex-1 overflow-hidden p-2 md:p-6">
+        <div class="bg-white rounded-xl shadow-lg border border-slate-200 h-full flex flex-col">
             
-            <p id="statusMsg" class="text-center font-semibold mt-4 hidden"></p>
-        </form>
+            <div id="loading" class="p-8 text-center text-slate-500 font-semibold animate-pulse">
+                Fetching Active Staff Members...
+            </div>
+
+            <div class="table-container overflow-auto hidden flex-1" id="tableContainer">
+                <table class="w-full text-left border-collapse min-w-[1000px]">
+                    <thead class="bg-slate-50 sticky top-0 z-10 shadow-sm text-xs uppercase text-slate-500">
+                        <tr>
+                            <th class="p-3 border-b border-r bg-slate-50 sticky left-0 w-64">Staff Member</th>
+                            <th class="p-3 border-b text-center">B</th>
+                            <th class="p-3 border-b text-center">L</th>
+                            <th class="p-3 border-b text-center border-r">D</th>
+                            <th class="p-3 border-b text-center">Tea</th>
+                            <th class="p-3 border-b text-center">Eggs</th>
+                            <th class="p-3 border-b text-center">Milk</th>
+                            <th class="p-3 border-b text-center">Roti</th>
+                            <th class="p-3 border-b text-center border-r">Paratha</th>
+                            <th class="p-3 border-b text-center">Special (Rs)</th>
+                            <th class="p-3 border-b w-48">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staffTableBody" class="text-sm divide-y divide-slate-100">
+                        </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
-        // --- PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE ---
+        // === PASTE YOUR NEW WEB APP URL HERE ===
         const WEB_APP_URL = "YOUR_WEB_APP_URL_GOES_HERE";
 
-        // Auto-fill today's date
-        document.getElementById('date').valueAsDate = new Date();
+        // Set default date to today
+        document.getElementById('globalDate').valueAsDate = new Date();
 
-        document.getElementById('attendanceForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
+        // Fetch staff on page load
+        window.onload = async () => {
+            try {
+                const response = await fetch(WEB_APP_URL);
+                const result = await response.json();
+                
+                if (result.status === "success") {
+                    populateTable(result.data);
+                } else {
+                    alert("Error loading staff: " + result.message);
+                }
+            } catch (error) {
+                alert("Connection failed. Check your Web App URL and permissions.");
+            }
+        };
+
+        // Build the table rows
+        function populateTable(staffList) {
+            const tbody = document.getElementById('staffTableBody');
+            tbody.innerHTML = '';
+
+            if(staffList.length === 0) {
+                document.getElementById('loading').innerText = "No active staff found in Staff_Master.";
+                return;
+            }
+
+            staffList.forEach(staff => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-blue-50 transition staff-row";
+                tr.dataset.email = staff.email;
+                tr.dataset.name = staff.name;
+
+                tr.innerHTML = `
+                    <td class="p-3 border-r bg-white sticky left-0 group-hover:bg-blue-50">
+                        <p class="font-bold text-slate-700 truncate w-48">${staff.name}</p>
+                        <p class="text-[10px] text-slate-400 truncate w-48">${staff.email}</p>
+                    </td>
+                    <td class="p-3 text-center"><input type="checkbox" class="inp-b w-4 h-4 cursor-pointer"></td>
+                    <td class="p-3 text-center"><input type="checkbox" class="inp-l w-4 h-4 cursor-pointer"></td>
+                    <td class="p-3 text-center border-r"><input type="checkbox" class="inp-d w-4 h-4 cursor-pointer"></td>
+                    <td class="p-3 text-center"><input type="number" min="0" class="inp-tea border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
+                    <td class="p-3 text-center"><input type="number" min="0" class="inp-eggs border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
+                    <td class="p-3 text-center"><input type="number" min="0" class="inp-milk border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
+                    <td class="p-3 text-center"><input type="number" min="0" class="inp-roti border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
+                    <td class="p-3 text-center border-r"><input type="number" min="0" class="inp-paratha border rounded p-1 text-xs outline-none focus:border-blue-500"></td>
+                    <td class="p-3 text-center"><input type="number" min="0" placeholder="0" class="inp-cost border rounded p-1 text-xs outline-none focus:border-blue-500 w-16"></td>
+                    <td class="p-3"><input type="text" placeholder="Notes..." class="inp-rem border rounded p-1 w-full text-xs outline-none focus:border-blue-500"></td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('tableContainer').classList.remove('hidden');
+        }
+
+        // Submit Logic
+        document.getElementById('submitBtn').addEventListener('click', async () => {
             const btn = document.getElementById('submitBtn');
-            const status = document.getElementById('statusMsg');
+            const selectedDate = document.getElementById('globalDate').value;
             
-            btn.innerText = "Submitting...";
-            btn.disabled = true;
-            btn.classList.add("opacity-70");
-            status.classList.add('hidden');
+            if(!selectedDate) return alert("Please select a date.");
 
-            // Gather data from form
-            const payload = {
-                date: document.getElementById('date').value,
-                email: document.getElementById('email').value,
-                name: document.getElementById('name').value,
-                breakfast: document.getElementById('breakfast').checked,
-                lunch: document.getElementById('lunch').checked,
-                dinner: document.getElementById('dinner').checked,
-                tea: document.getElementById('tea').value,
-                eggs: document.getElementById('eggs').value,
-                milk: document.getElementById('milk').value,
-                roti: document.getElementById('roti').value,
-                paratha: document.getElementById('paratha').value,
-                others: document.getElementById('others').value,
-                specialCost: document.getElementById('specialCost').value,
-                remarks: document.getElementById('remarks').value
-            };
+            const rows = document.querySelectorAll('.staff-row');
+            const payload = [];
+
+            // Iterate through every active staff member row
+            rows.forEach(row => {
+                const b = row.querySelector('.inp-b').checked;
+                const l = row.querySelector('.inp-l').checked;
+                const d = row.querySelector('.inp-d').checked;
+                
+                const tea = parseInt(row.querySelector('.inp-tea').value) || 0;
+                const eggs = parseInt(row.querySelector('.inp-eggs').value) || 0;
+                const milk = parseInt(row.querySelector('.inp-milk').value) || 0;
+                const roti = parseInt(row.querySelector('.inp-roti').value) || 0;
+                const paratha = parseInt(row.querySelector('.inp-paratha').value) || 0;
+                const cost = parseFloat(row.querySelector('.inp-cost').value) || 0;
+                const rem = row.querySelector('.inp-rem').value.trim();
+
+                // Only add to payload if they actually had a meal or extra
+                if (b || l || d || tea > 0 || eggs > 0 || milk > 0 || roti > 0 || paratha > 0 || cost > 0 || rem !== "") {
+                    payload.push({
+                        date: selectedDate,
+                        name: row.dataset.name,
+                        email: row.dataset.email,
+                        breakfast: b, lunch: l, dinner: d,
+                        tea: tea, eggs: eggs, milk: milk, roti: roti, paratha: paratha, specialCost: cost, remarks: rem
+                    });
+                }
+            });
+
+            if (payload.length === 0) {
+                return alert("No data entered. Please fill out meals for at least one person.");
+            }
+
+            // Send to Google Apps Script
+            btn.innerText = "Processing...";
+            btn.disabled = true;
 
             try {
-                // Send to Google Sheet
                 const response = await fetch(WEB_APP_URL, {
                     method: 'POST',
-                    // Using text/plain avoids strict CORS preflight checks in Apps Script
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                     body: JSON.stringify(payload)
                 });
                 
-                status.innerText = "Success! Record added to sheet.";
-                status.className = "text-center font-semibold mt-4 text-green-600 block";
+                const result = await response.json();
                 
-                // Reset standard fields, keep Date
-                document.getElementById('attendanceForm').reset();
-                document.getElementById('date').valueAsDate = new Date();
-
+                if(result.status === "success") {
+                    alert(`Success! Saved ${result.inserted} records to the sheet.`);
+                    // Clear the form but keep the date
+                    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+                    document.querySelectorAll('input[type="number"], input[type="text"]').forEach(inp => inp.value = "");
+                } else {
+                    alert("Error saving: " + result.message);
+                }
             } catch (error) {
-                status.innerText = "Error: Could not save record.";
-                status.className = "text-center font-semibold mt-4 text-red-600 block";
+                alert("Network error. Could not connect to Google Sheets.");
             } finally {
-                btn.innerText = "Submit Record";
+                btn.innerText = "Submit Data";
                 btn.disabled = false;
-                btn.classList.remove("opacity-70");
-                
-                // Hide success message after 3 seconds
-                setTimeout(() => { status.classList.add('hidden'); }, 3000);
             }
         });
     </script>
